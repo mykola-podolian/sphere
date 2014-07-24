@@ -67,8 +67,6 @@ void main_loop_function() {
 	glEnd();
 	glutSwapBuffers();
 	angle += 2;
-	std::cout << "angle: " << angle << '\n';
-	std::cout.flush();
 }
 // Initialze OpenGL perspective matrix
 void GL_Setup(int width, int height) {
