@@ -1,7 +1,13 @@
 #include <GL/glut.h>
 #include <iostream>
+#include <cmath>
 #define window_width  640
 #define window_height 480
+
+float const PI = 3.14159265;
+float const RAD_PER_DEGREE = PI / 180;
+
+void drawCircle(float r, int hsectors, int wsectors);
 
 // Main loop
 void main_loop_function() {
@@ -11,72 +17,100 @@ void main_loop_function() {
 	// Load identity matrix
 	glLoadIdentity();
 
-	glTranslatef(0, 0, -7);
+	glTranslatef(0, 0, -3);
 	glRotatef(angle, 1, 1, 0);
 
-	glBegin(GL_TRIANGLES);
+	glBegin(GL_POINTS);
 
-	glColor3f(255, 0, 0);
-	glVertex3f(-1, -1, -1);
-	glVertex3f(-1, 1, -1);
-	glVertex3f(1, 1, -1);
-	glVertex3f(-1, -1, -1);
-	glVertex3f(1, 1, -1);
-	glVertex3f(1, -1, -1);
+	float c[3] = {0,255,255};
+	glMaterialfv(GL_FRONT,GL_DIFFUSE, c);
+	glMaterialfv(GL_FRONT,GL_SPECULAR, c);
+//	glMaterialfv(GL_FRONT,GL_AMBIENT, c);
+//	glNormal3f(1, 1, 0.01);
+//
+//	glColor3f(255, 0, 0);
+//	glVertex3f(-1, -1, -1);
+//	glVertex3f(-1, 1, -1);
+//	glVertex3f(1, 1, -1);
+//	glVertex3f(-1, -1, -1);
+//	glVertex3f(1, 1, -1);
+//	glVertex3f(1, -1, -1);
+//
+//	glColor3f(0, 255, 0);
+//	glVertex3f(-1, -1, 1);
+//	glVertex3f(1, 1, 1);
+//	glVertex3f(-1, 1, 1);
+//	glVertex3f(-1, -1, 1);
+//	glVertex3f(1, -1, 1);
+//	glVertex3f(1, 1, 1);
+//
+//	glColor3f(255, 255, 0);
+//	glVertex3f(1, -1, -1);
+//	glVertex3f(1, 1, -1);
+//	glVertex3f(1, 1, 1);
+//	glVertex3f(1, 1, 1);
+//	glVertex3f(1, -1, 1);
+//	glVertex3f(1, -1, -1);
+//
+//	glColor3f(0, 0, 255);
+//	glVertex3f(-1, -1, -1);
+//	glVertex3f(-1, 1, 1);
+//	glVertex3f(-1, 1, -1);
+//	glVertex3f(-1, -1, -1);
+//	glVertex3f(-1, -1, 1);
+//	glVertex3f(-1, 1, 1);
+//
+//	glColor3f(255, 255, 255);
+//	glVertex3f(-1, 1, -1);
+//	glVertex3f(1, 1, 1);
+//	glVertex3f(1, 1, -1);
+//	glVertex3f(-1, 1, -1);
+//	glVertex3f(-1, 1, 1);
+//	glVertex3f(1, 1, 1);
+//
+//	glColor3f(255, 0, 255);
+//	glVertex3f(-1, -1, -1);
+//	glVertex3f(1, -1, -1);
+//	glVertex3f(1, -1, 1);
+//	glVertex3f(-1, -1, -1);
+//	glVertex3f(1, -1, 1);
+//	glVertex3f(-1, -1, 1);
 
-	glColor3f(0, 255, 0);
-	glVertex3f(-1, -1, 1);
-	glVertex3f(1, 1, 1);
-	glVertex3f(-1, 1, 1);
-	glVertex3f(-1, -1, 1);
-	glVertex3f(1, -1, 1);
-	glVertex3f(1, 1, 1);
-
-	glColor3f(255, 255, 0);
-	glVertex3f(1, -1, -1);
-	glVertex3f(1, 1, -1);
-	glVertex3f(1, 1, 1);
-	glVertex3f(1, 1, 1);
-	glVertex3f(1, -1, 1);
-	glVertex3f(1, -1, -1);
-
-	glColor3f(0, 0, 255);
-	glVertex3f(-1, -1, -1);
-	glVertex3f(-1, 1, 1);
-	glVertex3f(-1, 1, -1);
-	glVertex3f(-1, -1, -1);
-	glVertex3f(-1, -1, 1);
-	glVertex3f(-1, 1, 1);
-
-	glColor3f(255, 255, 255);
-	glVertex3f(-1, 1, -1);
-	glVertex3f(1, 1, 1);
-	glVertex3f(1, 1, -1);
-	glVertex3f(-1, 1, -1);
-	glVertex3f(-1, 1, 1);
-	glVertex3f(1, 1, 1);
-
-	glColor3f(255, 0, 255);
-	glVertex3f(-1, -1, -1);
-	glVertex3f(1, -1, -1);
-	glVertex3f(1, -1, 1);
-	glVertex3f(-1, -1, -1);
-	glVertex3f(1, -1, 1);
-	glVertex3f(-1, -1, 1);
+	drawCircle(1, 10, 20);
 
 	glEnd();
 	glutSwapBuffers();
-	angle += 2;
+	angle += 1;
 }
 // Initialze OpenGL perspective matrix
 void GL_Setup(int width, int height) {
-	glEnable(GL_CULL_FACE);
+//	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
+//	glEnable(GL_LIGHTING);
+//	glEnable(GL_LIGHT0);
+//	float c[3] = {255,255,255};
+//	glLightfv(GL_LIGHT0, GL_SPECULAR, c);
 	glDepthFunc(GL_LESS);
 	glMatrixMode(GL_PROJECTION);
 	glViewport(0, 0, width, height);
 	gluPerspective(45, (float) width / height, .1, 100);
 	glMatrixMode(GL_MODELVIEW);
+}
+
+void drawCircle(float r, int hsectors, int wsectors){
+	glVertex3f(0, 0, 1);
+	for(int zSector = 1 ; zSector < hsectors; zSector++){
+		float zArc = 90 - float(zSector * 180) / hsectors;
+		float zR = r * cos(zArc * RAD_PER_DEGREE);
+		float zCord = r * sin(zArc * RAD_PER_DEGREE);
+		for(int xySector = 0 ; xySector < wsectors ; xySector ++){
+			float xyArc = float(xySector * 360)/ wsectors;
+			float xCord = zR * cos(xyArc * RAD_PER_DEGREE);
+			float yCord = zR * sin(xyArc * RAD_PER_DEGREE);
+			glVertex3f(xCord, yCord, zCord);
+		}
+	}
+	glVertex3f(0, 0, -1);
 }
 
 // Initialize GLUT and start main loop
