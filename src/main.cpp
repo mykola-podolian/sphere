@@ -9,6 +9,10 @@ float const RAD_PER_DEGREE = PI / 180;
 
 void drawCircle(float r, int hsectors, int wsectors);
 
+struct vertex {
+	float x, y, z;
+};
+
 // Main loop
 void main_loop_function() {
 	static float angle = 0;
@@ -20,11 +24,11 @@ void main_loop_function() {
 	glTranslatef(0, 0, -3);
 	glRotatef(angle, 1, 1, 0);
 
-	glBegin(GL_POINTS);
-
-	float c[3] = {0,255,255};
-	glMaterialfv(GL_FRONT,GL_DIFFUSE, c);
-	glMaterialfv(GL_FRONT,GL_SPECULAR, c);
+	glBegin(GL_TRIANGLE_STRIP);
+	glColor3f(255, 0, 0);
+//	float c[3] = {0,255,255};
+//	glMaterialfv(GL_FRONT,GL_DIFFUSE, c);
+//	glMaterialfv(GL_FRONT,GL_SPECULAR, c);
 //	glMaterialfv(GL_FRONT,GL_AMBIENT, c);
 //	glNormal3f(1, 1, 0.01);
 //
@@ -76,7 +80,7 @@ void main_loop_function() {
 //	glVertex3f(1, -1, 1);
 //	glVertex3f(-1, -1, 1);
 
-	drawCircle(1, 10, 20);
+	drawCircle(1, 40, 80);
 
 	glEnd();
 	glutSwapBuffers();
@@ -84,7 +88,7 @@ void main_loop_function() {
 }
 // Initialze OpenGL perspective matrix
 void GL_Setup(int width, int height) {
-//	glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 //	glEnable(GL_LIGHTING);
 //	glEnable(GL_LIGHT0);
@@ -97,17 +101,33 @@ void GL_Setup(int width, int height) {
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void drawCircle(float r, int hsectors, int wsectors){
+void drawCircle(float r, int hsectors, int wsectors) {
+	float color = 1;
 	glVertex3f(0, 0, 1);
-	for(int zSector = 1 ; zSector < hsectors; zSector++){
+	vertex prev[wsectors];
+	for (int zSector = 1; zSector < hsectors; zSector++) {
 		float zArc = 90 - float(zSector * 180) / hsectors;
 		float zR = r * cos(zArc * RAD_PER_DEGREE);
 		float zCord = r * sin(zArc * RAD_PER_DEGREE);
-		for(int xySector = 0 ; xySector < wsectors ; xySector ++){
-			float xyArc = float(xySector * 360)/ wsectors;
+		for (int xySector = 0; xySector < wsectors; xySector++) {
+			float xyArc = float(xySector * 360) / wsectors;
 			float xCord = zR * cos(xyArc * RAD_PER_DEGREE);
 			float yCord = zR * sin(xyArc * RAD_PER_DEGREE);
 			glVertex3f(xCord, yCord, zCord);
+			vertex current = { xCord, yCord, zCord };
+			color -= 0.0003;
+			glColor3f(color, 1-color,0);
+			if (zSector == 1) {
+				glVertex3f(0, 0, r);
+			}
+//			else if(zSector == (hsectors)){
+//				glVertex3f(0, 0, -r);
+//			}
+			else {
+				glVertex3f(prev[xySector].x, prev[xySector].y,
+						prev[xySector].z);
+			}
+			prev[xySector] = current;
 		}
 	}
 	glVertex3f(0, 0, -1);
