@@ -18,13 +18,20 @@ void drawSphereT(float r, int hsectors, int wsectors);
 void drawSphereTS(float r, int hsectors, int wsectors);
 void drawTriangleStrip(vertex & v);
 void normal(vertex v[3], vertex & normal);
+void normalize(vertex & v);
 
 void draw_triangle(vertex v[3]) {
-	vertex n;
-	normal(v, n);
+	vertex n = v[0];
+	normalize(n);
 	glNormal3f(n.x, n.y, n.z);
 	glVertex3f(v[0].x, v[0].y, v[0].z);
+	n = v[1];
+	normalize(n);
+	glNormal3f(n.x, n.y, n.z);
 	glVertex3f(v[1].x, v[1].y, v[1].z);
+	n = v[2];
+	normalize(n);
+	glNormal3f(n.x, n.y, n.z);
 	glVertex3f(v[2].x, v[2].y, v[2].z);
 }
 
@@ -35,40 +42,52 @@ void main_loop_function() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	// Load identity matrix
 	glLoadIdentity();
+	GLfloat light_position[] = { 1, 1, 0.5, 0 };
+	GLfloat white_light[] = { 1.0, 1.0, 1.0, 0.0 };
+	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, white_light);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, white_light);
 
 	glTranslatef(0, 0, -9);
+	glPushMatrix();
+
 	glRotatef(angle, 0, 1, 0);
-	glTranslatef(0, 0, -1.5);
+	glTranslatef(0, 0, -2.2);
 
-	glBegin(GL_TRIANGLES);
-	drawSphereT(1, 4, 8);
-	glEnd();
-	glTranslatef(0, 0, 3);
-	glBegin(GL_TRIANGLES);
-	drawSphereT(1, 16, 32);
-	glEnd();
+	drawSphereTS(1, 4, 8);
 
-	glTranslatef(0, 0, -1.5);
-	glRotatef(angle, 0, -1, 0);
+	glPopMatrix();
+	glPushMatrix();
+
+	glRotatef(angle, 0, 1, 0);
+	glTranslatef(0, 0, 2.2);
+
+	drawSphereT(1, 8, 16);
+
+	glPopMatrix();
+	glPushMatrix();
+
 	glRotatef(angle, 1, 0, 0);
-	glTranslatef(0, 2.5, 0);
-	glBegin(GL_TRIANGLES);
-	drawSphereT(1, 128, 256);
-	glEnd();
-	glTranslatef(0, -5, 0);
-	glBegin(GL_TRIANGLES);
-	drawSphereT(1, 32, 64);
-	glEnd();
+	glTranslatef(0, 4, 0);
+
+	drawSphereT(2, 16, 32);
+
+	glPopMatrix();
+	glRotatef(angle, 1, 0, 0);
+	glTranslatef(0, -3, 0);
+
+	drawSphereT(1.5, 64, 128);
+
 	glutSwapBuffers();
 	angle += 1;
 }
 // Initialze OpenGL perspective matrix
 void GL_Setup(int width, int height) {
 	GLfloat mat_specular[] = { 1, 1, 1, 1 };
-	GLfloat mat_ambient[] = { 0, 0.5, 0, 1 };
+	GLfloat mat_ambient[] = { 0.2, 0.2, 0, 1 };
 	GLfloat mat_diffuse[] = { 1, 1, 0, 0.0 };
 	GLfloat mat_shininess[] = { 50.0 };
-	GLfloat light_position[] = { 1, 1, 0, 0 };
+	GLfloat light_position[] = { 1, 1, 0.5, 0 };
 	GLfloat white_light[] = { 1.0, 1.0, 1.0, 0.0 };
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -91,6 +110,7 @@ void GL_Setup(int width, int height) {
 }
 
 void drawSphereT(float r, int hsectors, int wsectors) {
+	glBegin(GL_TRIANGLES);
 	vector<vertex> prevCircle;
 	for (int zSector = 1; zSector <= hsectors; zSector++) {
 		float zArc = 90 - float(zSector * 180) / hsectors;
@@ -111,7 +131,6 @@ void drawSphereT(float r, int hsectors, int wsectors) {
 					draw_triangle(triangle);
 				}
 				prev = current;
-				first = false;
 			} else {
 				if (!first) {
 					vertex t1[3] = { prevCircle[xySector], prev, current };
@@ -121,16 +140,17 @@ void drawSphereT(float r, int hsectors, int wsectors) {
 					draw_triangle(t2);
 				}
 				prev = current;
-				first = false;
 			}
+			first = false;
 			currentCircle.push_back(current);
 		}
 		prevCircle = currentCircle;
 	}
+	glEnd();
 }
 
 void drawSphereTS(float r, int hsectors, int wsectors) {
-	float color = 1;
+	glBegin(GL_TRIANGLE_STRIP);
 	vertex prevCircleCords[wsectors];
 	for (int zSector = 1; zSector <= hsectors; zSector++) {
 
@@ -160,31 +180,15 @@ void drawSphereTS(float r, int hsectors, int wsectors) {
 
 			prevCircleCords[xySector] = second;
 		}
-		color -= 0.025;
-		glColor3f(color, 1 - color, 0);
 	}
+	glEnd();
 }
 
 void drawTriangleStrip(vertex & v) {
-	static vertex prev;
-	static vertex pprev;
-	static int counter = 0;
-	if (counter == 0) {
-		pprev = v;
-	} else if (counter == 1) {
-		prev = v;
-	} else {
-		vertex triangle[3] = { pprev, prev, v };
-		vertex n;
-		normal(triangle, n);
-		if (n.x != 0 || n.y != 0 || n.z != 0) {
-			glNormal3f(n.x, n.y, n.z);
-		}
-		pprev = prev;
-		prev = v;
-	}
+	vertex normal = v;
+	normalize(normal);
+	glNormal3f(normal.x, normal.y, normal.z);
 	glVertex3f(v.x, v.y, v.z);
-	counter++;
 }
 
 void normal(vertex v[3], vertex & normal) {
@@ -198,14 +202,16 @@ void normal(vertex v[3], vertex & normal) {
 	normal.x = (a.y * b.z) - (a.z * b.y);
 	normal.y = (a.z * b.x) - (a.x * b.z);
 	normal.z = (a.x * b.y) - (a.y * b.x);
-	float len = (float) (sqrt(
-			(normal.x * normal.x) + (normal.y * normal.y)
-					+ (normal.z * normal.z)));
+	normalize(normal);
+}
+
+void normalize(vertex & v) {
+	float len = (float) (sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z)));
 	if (len == 0.0f)
 		len = 1.0f;
-	normal.x /= len;
-	normal.y /= len;
-	normal.z /= len;
+	v.x /= len;
+	v.y /= len;
+	v.z /= len;
 }
 
 // Initialize GLUT and start main loop
